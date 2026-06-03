@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model PerwakilanSatuKK {
+  id               String   @id @default(cuid())
+  nomorUrut        Int      @unique
+  namaLengkapWakil String
+  nikWakil         String   @unique
+  ttdWakil         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdBy        String
+
+  @@index([nikWakil])
+  @@index([namaLengkapWakil])
+  @@index([nomorUrut])
+  @@map("perwakilan_satu_kk")
+}
+
+model PerwakilanBedaKK {
+  id                    String   @id @default(cuid())
+  nomorUrut             Int      @unique
+  namaPenerimaBarcode   String
+  nikPenerimaBarcode    String   @unique
+  alamatPenerimaBarcode String
+  namaLengkapWakil      String
+  nikWakil              String
+  alamatWakil           String
+  ttdWakil              String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  createdBy             String
+
+  @@index([nikPenerimaBarcode])
+  @@index([namaPenerimaBarcode])
+  @@index([nomorUrut])
+  @@map("perwakilan_beda_kk")
+}
+
+model Pengganti {
+  id                 String   @id @default(cuid())
+  nomorUrut          Int      @unique
+  namaPbpAwal        String
+  nikPbpAwal         String   @unique
+  alamatPbpAwal      String
+  namaPbpPengganti   String
+  nikPbpPengganti    String   @unique
+  alamatPbpPengganti String
+  sebabPenggantian   String
+  ttdPengganti       String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  createdBy          String
+
+  @@index([nikPbpAwal])
+  @@index([nikPbpPengganti])
+  @@index([nomorUrut])
+  @@map("pengganti")
+}
+
+enum Role {
+  SUPERADMIN
+  USER
+}
