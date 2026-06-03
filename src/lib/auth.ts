@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 const useSecureCookies = process.env.NODE_ENV === "production";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET,
   trustHost: true,
   session: { strategy: "jwt" },
   pages: {
