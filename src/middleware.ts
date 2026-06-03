@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const session = await auth();
-  const isLoggedIn = !!session?.user;
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+  });
+
+  const isLoggedIn = !!token;
 
   if (pathname === "/login") {
     if (isLoggedIn) {
@@ -20,7 +24,7 @@ export async function middleware(req: NextRequest) {
 
   if (
     pathname.startsWith("/dashboard/pengguna") &&
-    session?.user?.role !== "SUPERADMIN"
+    token?.role !== "SUPERADMIN"
   ) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
