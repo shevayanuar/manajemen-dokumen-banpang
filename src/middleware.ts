@@ -4,9 +4,17 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
+    cookieName: isProduction
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token",
+    salt: isProduction
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token",
   });
 
   const isLoggedIn = !!token;
