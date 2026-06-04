@@ -39,7 +39,9 @@ export default function PenggunaPage() {
 
   function openEdit(user: User) {
     setEditUser(user);
-    setName(user.name); setEmail(user.email); setPassword(""); setFormError("");
+    setName(user.name.toUpperCase());
+    setEmail(user.email.toLowerCase());
+    setPassword(""); setFormError("");
     setShowForm(true);
   }
 
@@ -50,7 +52,10 @@ export default function PenggunaPage() {
 
     const url = editUser ? `/api/users/${editUser.id}` : "/api/users";
     const method = editUser ? "PUT" : "POST";
-    const body: Record<string, string> = { name, email };
+    const body: Record<string, string> = {
+      name: name.trim().toUpperCase(),
+      email: email.trim().toLowerCase(),
+    };
     if (password) body.password = password;
 
     const res = await fetch(url, {
@@ -91,6 +96,7 @@ export default function PenggunaPage() {
         </button>
       </div>
 
+      {/* Users table */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="data-table">
@@ -176,7 +182,8 @@ export default function PenggunaPage() {
       {/* Add/Edit Modal */}
       {showForm && (
         <Modal onClose={() => setShowForm(false)}>
-          <div className="w-full max-w-md animate-scaleIn card overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-md animate-scaleIn card overflow-hidden"
+            onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4"
               style={{ borderBottom: "1px solid var(--border)" }}>
               <h2 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
@@ -194,13 +201,19 @@ export default function PenggunaPage() {
               <div className="px-5 py-4 flex flex-col gap-4">
                 <div>
                   <label className="label">Nama</label>
-                  <input type="text" className="input-field" placeholder="Nama lengkap"
-                    value={name} onChange={e => setName(e.target.value)} required />
+                  <input type="text" className="input-field" placeholder="NAMA LENGKAP"
+                    style={{ textTransform: "uppercase" }}
+                    value={name}
+                    onChange={e => setName(e.target.value.toUpperCase())}
+                    required />
                 </div>
                 <div>
                   <label className="label">Email</label>
                   <input type="email" className="input-field" placeholder="email@contoh.com"
-                    value={email} onChange={e => setEmail(e.target.value)} required />
+                    style={{ textTransform: "lowercase" }}
+                    value={email}
+                    onChange={e => setEmail(e.target.value.toLowerCase())}
+                    required />
                 </div>
                 <div>
                   <label className="label">
@@ -247,10 +260,11 @@ export default function PenggunaPage() {
         </Modal>
       )}
 
-      {/* Delete Modal */}
+      {/* Delete modal */}
       {deleteUser && (
         <Modal onClose={() => setDeleteUser(null)}>
-          <div className="w-full max-w-sm animate-scaleIn card overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-sm animate-scaleIn card overflow-hidden"
+            onClick={e => e.stopPropagation()}>
             <div className="px-5 py-5 flex flex-col items-center text-center gap-3">
               <div className="w-12 h-12 rounded-full flex items-center justify-center"
                 style={{ background: "var(--danger-subtle)", border: "1px solid rgba(220,38,38,0.3)" }}>

@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 
 export default function AkunPage() {
   const { data: session } = useSession();
-  const [name, setName] = useState(session?.user?.name ?? "");
-  const [email, setEmail] = useState(session?.user?.email ?? "");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,13 +16,27 @@ export default function AkunPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  if (session?.user && !name) setName(session.user.name);
-  if (session?.user && !email) setEmail(session.user.email);
+  // Set initial values only once when session loads
+  useEffect(() => {
+    if (session?.user) {
+      setName(session.user.name?.toUpperCase() ?? "");
+      setEmail(session.user.email?.toLowerCase() ?? "");
+    }
+  }, [session]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    if (!name.trim()) {
+      setError("Nama wajib diisi.");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Email wajib diisi.");
+      return;
+    }
 
     if (newPassword && newPassword !== confirmPassword) {
       setError("Konfirmasi password baru tidak cocok.");
@@ -38,8 +52,8 @@ export default function AkunPage() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name,
-        email,
+        name: name.trim().toUpperCase(),
+        email: email.trim().toLowerCase(),
         currentPassword: currentPassword || undefined,
         newPassword: newPassword || undefined,
       }),
@@ -57,7 +71,7 @@ export default function AkunPage() {
     setNewPassword("");
     setConfirmPassword("");
 
-    if (newPassword || email !== session?.user?.email) {
+    if (newPassword || email.toLowerCase() !== session?.user?.email?.toLowerCase()) {
       setTimeout(() => signOut({ callbackUrl: "/login" }), 1500);
     }
   }
@@ -80,7 +94,7 @@ export default function AkunPage() {
   return (
     <div className="animate-fadeIn max-w-lg">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Kelola Akun</h1>
+        <h1 className="text-xl lg:text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Kelola Akun</h1>
         <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
           {isSuperadmin ? "Kelola akun superadmin" : "Kelola akun Anda"}
         </p>
@@ -91,7 +105,7 @@ export default function AkunPage() {
         style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
           style={{
-            background: isSuperadmin ? "rgba(251,191,36,0.1)" : "var(--accent-subtle)",
+            background: isSuperadmin ? "rgba(217,119,6,0.1)" : "var(--accent-subtle)",
             color: isSuperadmin ? "var(--warning)" : "var(--accent)"
           }}>
           {session?.user?.name?.charAt(0).toUpperCase()}
@@ -106,7 +120,7 @@ export default function AkunPage() {
         </div>
         <span className="px-2 py-0.5 rounded text-xs font-medium flex-shrink-0"
           style={{
-            background: isSuperadmin ? "rgba(251,191,36,0.1)" : "var(--accent-subtle)",
+            background: isSuperadmin ? "rgba(217,119,6,0.1)" : "var(--accent-subtle)",
             color: isSuperadmin ? "var(--warning)" : "var(--accent)",
           }}>
           {isSuperadmin ? "Super Admin" : "User"}
@@ -114,7 +128,6 @@ export default function AkunPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-
         {/* Informasi akun */}
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>
@@ -123,14 +136,22 @@ export default function AkunPage() {
           <div className="flex flex-col gap-4">
             <div>
               <label className="label">Nama</label>
-              <input type="text" className="input-field" value={name}
-                onChange={e => setName(e.target.value)} required />
+              <input type="text" className="input-field"
+                style={{ textTransform: "uppercase" }}
+                placeholder="NAMA LENGKAP"
+                value={name}
+                onChange={e => setName(e.target.value.toUpperCase())}
+              />
             </div>
             <div>
               <label className="label">Email</label>
-              <input type="email" className="input-field" value={email}
-                onChange={e => setEmail(e.target.value)} required />
-              {email !== session?.user?.email && (
+              <input type="email" className="input-field"
+                style={{ textTransform: "lowercase" }}
+                placeholder="email@contoh.com"
+                value={email}
+                onChange={e => setEmail(e.target.value.toLowerCase())}
+              />
+              {email.toLowerCase() !== (session?.user?.email?.toLowerCase() ?? "") && email !== "" && (
                 <p className="text-xs mt-1" style={{ color: "var(--warning)" }}>
                   ⚠ Mengubah email akan logout otomatis
                 </p>
@@ -156,9 +177,7 @@ export default function AkunPage() {
                   onChange={e => setCurrentPassword(e.target.value)} />
                 <button type="button" onClick={() => setShowCurrent(!showCurrent)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: "var(--text-muted)" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "var(--text-secondary)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}>
+                  style={{ color: "var(--text-muted)" }}>
                   <EyeIcon show={showCurrent} />
                 </button>
               </div>
@@ -171,9 +190,7 @@ export default function AkunPage() {
                   onChange={e => setNewPassword(e.target.value)} />
                 <button type="button" onClick={() => setShowNew(!showNew)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: "var(--text-muted)" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "var(--text-secondary)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}>
+                  style={{ color: "var(--text-muted)" }}>
                   <EyeIcon show={showNew} />
                 </button>
               </div>
@@ -186,9 +203,7 @@ export default function AkunPage() {
                   onChange={e => setConfirmPassword(e.target.value)} />
                 <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: "var(--text-muted)" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "var(--text-secondary)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}>
+                  style={{ color: "var(--text-muted)" }}>
                   <EyeIcon show={showConfirm} />
                 </button>
               </div>
@@ -201,14 +216,14 @@ export default function AkunPage() {
 
         {error && (
           <div className="px-3 py-2.5 rounded-lg text-sm"
-            style={{ background: "var(--danger-subtle)", color: "var(--danger)", border: "1px solid rgba(248,113,113,0.2)" }}>
+            style={{ background: "var(--danger-subtle)", color: "var(--danger)", border: "1px solid rgba(220,38,38,0.2)" }}>
             {error}
           </div>
         )}
         {success && (
           <div className="px-3 py-2.5 rounded-lg text-sm"
             style={{ background: "var(--success-subtle)", color: "var(--success)", border: "1px solid rgba(52,211,153,0.2)" }}>
-            {success}{(newPassword || email !== session?.user?.email) && " Mengalihkan ke login..."}
+            {success}{(newPassword || email.toLowerCase() !== session?.user?.email?.toLowerCase()) && " Mengalihkan ke login..."}
           </div>
         )}
 
