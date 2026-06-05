@@ -204,7 +204,8 @@ export default function PenggunaPage() {
                   <input type="text" className="input-field" placeholder="NAMA LENGKAP"
                     style={{ textTransform: "uppercase" }}
                     value={name}
-                    onChange={e => setName(e.target.value.toUpperCase())}
+                    onChange={e => setName(e.target.value.slice(0, 100))}
+                    onBlur={e => setName(e.target.value.toUpperCase())}
                     required />
                 </div>
                 <div>
@@ -212,7 +213,8 @@ export default function PenggunaPage() {
                   <input type="email" className="input-field" placeholder="email@contoh.com"
                     style={{ textTransform: "lowercase" }}
                     value={email}
-                    onChange={e => setEmail(e.target.value.toLowerCase())}
+                    onChange={e => setEmail(e.target.value)}
+                    onBlur={e => setEmail(e.target.value.toLowerCase())}
                     required />
                 </div>
                 <div>

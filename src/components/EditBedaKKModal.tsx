@@ -124,7 +124,7 @@ export function EditBedaKKModal({ item, onClose, onSuccess }: Props) {
               Edit Data Perwakilan Beda KK
             </h2>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              #{String(item.nomorUrut).padStart(4, "0")} · {item.namaPenerimaBarcode}
+              #{item.nomorUrut} · {item.namaPenerimaBarcode}
             </p>
           </div>
           <button onClick={onClose}
@@ -168,7 +168,7 @@ export function EditBedaKKModal({ item, onClose, onSuccess }: Props) {
                 <label className="label">Nama Penerima Barcode <span style={{ color: "var(--danger)" }}>*</span></label>
                 <input type="text" className="input-field"
                   style={{ textTransform: "uppercase", ...(errors.namaPenerima ? { borderColor: "var(--danger)" } : {}) }}
-                  placeholder="NAMA SESUAI KTP (HURUF KAPITAL)"
+                  placeholder="Nama sesuai KTP"
                   value={namaPenerima}
                   onChange={e => { setNamaPenerima(e.target.value.slice(0, 50)); if (errors.namaPenerima) setErrors(p => ({ ...p, namaPenerima: "" })); }}
                   onBlur={e => setNamaPenerima(e.target.value.toUpperCase())}
@@ -210,7 +210,7 @@ export function EditBedaKKModal({ item, onClose, onSuccess }: Props) {
                 <label className="label">Nama Lengkap Wakil <span style={{ color: "var(--danger)" }}>*</span></label>
                 <input type="text" className="input-field"
                   style={{ textTransform: "uppercase", ...(errors.namaWakil ? { borderColor: "var(--danger)" } : {}) }}
-                  placeholder="NAMA SESUAI KTP (HURUF KAPITAL)"
+                  placeholder="Nama sesuai KTP"
                   value={namaWakil}
                   onChange={e => { setNamaWakil(e.target.value.slice(0, 50)); if (errors.namaWakil) setErrors(p => ({ ...p, namaWakil: "" })); }}
                   onBlur={e => setNamaWakil(e.target.value.toUpperCase())}

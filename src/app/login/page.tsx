@@ -17,7 +17,7 @@ export default function LoginPage() {
     setError("");
 
     const res = await signIn("credentials", {
-      email,
+      email: email.trim().toLowerCase(),
       password,
       redirect: false,
     });
@@ -34,14 +34,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--bg)" }}>
+      {/* Background grid */}
       <div className="fixed inset-0 pointer-events-none" style={{
         backgroundImage: "linear-gradient(rgba(79,110,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79,110,247,0.03) 1px, transparent 1px)",
         backgroundSize: "48px 48px"
       }} />
+
+      {/* Glow */}
       <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full pointer-events-none"
         style={{ background: "radial-gradient(circle, rgba(79,110,247,0.08) 0%, transparent 70%)" }} />
 
       <div className="w-full max-w-sm animate-scaleIn relative z-10">
+        {/* Logo / Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
             style={{ background: "var(--accent-subtle)", border: "1px solid rgba(79,110,247,0.3)" }}>
@@ -52,13 +56,14 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
-            Website Manajemen Banpang Temiyang
+            Sistem Data Perwakilan
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
             Masuk untuk melanjutkan
           </p>
         </div>
 
+        {/* Card */}
         <div className="card p-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
@@ -67,8 +72,10 @@ export default function LoginPage() {
                 type="email"
                 className="input-field"
                 placeholder="email@contoh.com"
+                style={{ textTransform: "lowercase" }}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
+                onBlur={e => setEmail(e.target.value.toLowerCase())}
                 required
                 autoFocus
               />

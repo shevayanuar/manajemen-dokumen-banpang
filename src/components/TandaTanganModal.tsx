@@ -17,7 +17,7 @@ export function TandaTanganModal({ item, onClose }: Props) {
           <div>
             <h2 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>Tanda Tangan</h2>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              #{String(item.nomorUrut).padStart(4, "0")} · {item.namaLengkap}
+              #{item.nomorUrut} · {item.namaLengkap}
             </p>
           </div>
           <button onClick={onClose}
@@ -40,7 +40,7 @@ export function TandaTanganModal({ item, onClose }: Props) {
             <div className="px-3 py-2.5 rounded-lg" style={{ background: "var(--bg)" }}>
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>Nomor Urut</p>
               <p className="text-sm font-mono font-medium mt-0.5" style={{ color: "var(--text-primary)" }}>
-                #{String(item.nomorUrut).padStart(4, "0")}
+                #{item.nomorUrut}
               </p>
             </div>
           </div>

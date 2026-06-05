@@ -140,7 +140,8 @@ export default function AkunPage() {
                 style={{ textTransform: "uppercase" }}
                 placeholder="NAMA LENGKAP"
                 value={name}
-                onChange={e => setName(e.target.value.toUpperCase())}
+                onChange={e => setName(e.target.value.slice(0, 100))}
+                onBlur={e => setName(e.target.value.toUpperCase())}
               />
             </div>
             <div>
@@ -149,7 +150,8 @@ export default function AkunPage() {
                 style={{ textTransform: "lowercase" }}
                 placeholder="email@contoh.com"
                 value={email}
-                onChange={e => setEmail(e.target.value.toLowerCase())}
+                onChange={e => setEmail(e.target.value)}
+                onBlur={e => setEmail(e.target.value.toLowerCase())}
               />
               {email.toLowerCase() !== (session?.user?.email?.toLowerCase() ?? "") && email !== "" && (
                 <p className="text-xs mt-1" style={{ color: "var(--warning)" }}>
