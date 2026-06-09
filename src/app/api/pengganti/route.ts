@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPenggantiData, TAGS } from "@/lib/cache";
 import { isNomorUrutTaken, isNikTaken } from "@/lib/validateCross";
 
 export async function GET(req: NextRequest) {
@@ -12,26 +14,8 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "50");
 
-  const where = search ? {
-    OR: [
-      { namaPbpAwal: { contains: search, mode: "insensitive" as const } },
-      { namaPbpPengganti: { contains: search, mode: "insensitive" as const } },
-      { nikPbpAwal: { contains: search } },
-      { nikPbpPengganti: { contains: search } },
-      ...(isNaN(Number(search)) ? [] : [{ nomorUrut: Number(search) }]),
-    ],
-  } : {};
-
-  const skip = (page - 1) * limit;
-  const [data, total] = await Promise.all([
-    prisma.pengganti.findMany({
-      where, orderBy: { nomorUrut: "asc" }, skip, take: limit,
-      select: { id: true, nomorUrut: true, namaPbpAwal: true, nikPbpAwal: true, alamatPbpAwal: true, namaPbpPengganti: true, nikPbpPengganti: true, alamatPbpPengganti: true, sebabPenggantian: true, ttdPengganti: true, createdAt: true },
-    }),
-    prisma.pengganti.count({ where }),
-  ]);
-
-  return NextResponse.json({ data, total, page, limit });
+  const data = await getPenggantiData(search, page, limit);
+  return NextResponse.json(data);
 }
 
 export async function POST(req: NextRequest) {
@@ -54,11 +38,8 @@ export async function POST(req: NextRequest) {
   if (nikPbpAwal === nikPbpPengganti)
     return NextResponse.json({ error: "NIK PBP Awal dan NIK PBP Pengganti tidak boleh sama" }, { status: 400 });
 
-  // Cek nomor urut cross-tabel
   if (await isNomorUrutTaken(nomor))
     return NextResponse.json({ error: "Nomor urut barcode tersebut sudah terdata" }, { status: 400 });
-
-  // Cek NIK cross-tabel
   if (await isNikTaken(nikPbpAwal))
     return NextResponse.json({ error: "NIK PBP Awal sudah terdaftar di sistem" }, { status: 400 });
   if (await isNikTaken(nikPbpPengganti))
@@ -67,5 +48,10 @@ export async function POST(req: NextRequest) {
   const data = await prisma.pengganti.create({
     data: { nomorUrut: nomor, namaPbpAwal, nikPbpAwal, alamatPbpAwal, namaPbpPengganti, nikPbpPengganti, alamatPbpPengganti, sebabPenggantian, ttdPengganti, createdBy: session.user.id },
   });
+
+  revalidateTag(TAGS.penggantiStats);
+  revalidateTag(TAGS.penggantiData);
+  revalidateTag(TAGS.dashboardStats);
+
   return NextResponse.json(data, { status: 201 });
 }

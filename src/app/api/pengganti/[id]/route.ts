@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { TAGS } from "@/lib/cache";
 import { isNomorUrutTaken, isNikTaken } from "@/lib/validateCross";
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -8,6 +10,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   await prisma.pengganti.delete({ where: { id } });
+
+  revalidateTag(TAGS.penggantiStats);
+  revalidateTag(TAGS.penggantiData);
+  revalidateTag(TAGS.dashboardStats);
+
   return NextResponse.json({ success: true });
 }
 
@@ -61,5 +68,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (ttdPengganti) updateData.ttdPengganti = ttdPengganti;
 
   const updated = await prisma.pengganti.update({ where: { id }, data: updateData });
+
+  revalidateTag(TAGS.penggantiData);
+
   return NextResponse.json(updated);
 }

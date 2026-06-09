@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSatuKKData } from "@/lib/cache";
+import { TAGS } from "@/lib/cache";
 import { isNomorUrutTaken, isNikTaken } from "@/lib/validateCross";
 
 export async function GET(req: NextRequest) {
@@ -12,24 +15,8 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "50");
 
-  const where = search ? {
-    OR: [
-      { namaLengkapWakil: { contains: search, mode: "insensitive" as const } },
-      { nikWakil: { contains: search } },
-      ...(isNaN(Number(search)) ? [] : [{ nomorUrut: Number(search) }]),
-    ],
-  } : {};
-
-  const skip = (page - 1) * limit;
-  const [data, total] = await Promise.all([
-    prisma.perwakilanSatuKK.findMany({
-      where, orderBy: { nomorUrut: "asc" }, skip, take: limit,
-      select: { id: true, nomorUrut: true, namaLengkapWakil: true, nikWakil: true, ttdWakil: true, createdAt: true },
-    }),
-    prisma.perwakilanSatuKK.count({ where }),
-  ]);
-
-  return NextResponse.json({ data, total, page, limit });
+  const data = await getSatuKKData(search, page, limit);
+  return NextResponse.json(data);
 }
 
 export async function POST(req: NextRequest) {
@@ -56,5 +43,11 @@ export async function POST(req: NextRequest) {
   const data = await prisma.perwakilanSatuKK.create({
     data: { nomorUrut: nomor, namaLengkapWakil, nikWakil, ttdWakil, createdBy: session.user.id },
   });
+
+  // Invalidate: stats + data + dashboard
+  revalidateTag(TAGS.satuKKStats);
+  revalidateTag(TAGS.satuKKData);
+  revalidateTag(TAGS.dashboardStats);
+
   return NextResponse.json(data, { status: 201 });
 }

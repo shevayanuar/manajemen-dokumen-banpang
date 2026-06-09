@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getBedaKKStats } from "@/lib/cache";
 
 export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
-
-  const [total, todayCount] = await Promise.all([
-    prisma.perwakilanBedaKK.count(),
-    prisma.perwakilanBedaKK.count({ where: { createdAt: { gte: todayStart } } }),
-  ]);
-
-  return NextResponse.json({ total, todayCount });
+  const data = await getBedaKKStats();
+  return NextResponse.json(data);
 }

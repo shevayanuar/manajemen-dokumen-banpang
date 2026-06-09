@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { TAGS } from "@/lib/cache";
 import { isNomorUrutTaken, isNikTaken } from "@/lib/validateCross";
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -8,6 +10,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   await prisma.perwakilanBedaKK.delete({ where: { id } });
+
+  revalidateTag(TAGS.bedaKKStats);
+  revalidateTag(TAGS.bedaKKData);
+  revalidateTag(TAGS.dashboardStats);
+
   return NextResponse.json({ success: true });
 }
 
@@ -44,7 +51,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "NIK wakil sudah terdaftar di sistem" }, { status: 400 });
     const count = await prisma.perwakilanBedaKK.count({ where: { nikWakil } });
     if (count >= 3)
-      return NextResponse.json({ error: "NIK wakil sudah digunakan 3 kali, tidak dapat ditambahkan lagi" }, { status: 400 });
+      return NextResponse.json({ error: "NIK wakil sudah digunakan 3 kali" }, { status: 400 });
   }
 
   const finalNikPenerima = nikPenerimaBarcode || current.nikPenerimaBarcode;
@@ -63,5 +70,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (ttdWakil) updateData.ttdWakil = ttdWakil;
 
   const updated = await prisma.perwakilanBedaKK.update({ where: { id }, data: updateData });
+
+  revalidateTag(TAGS.bedaKKData);
+
   return NextResponse.json(updated);
 }
